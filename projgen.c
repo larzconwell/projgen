@@ -7,9 +7,9 @@
 
 #include "version.h"
 
-static char *expand_path(char *path) {
+static char *expand_path(char *path, const int pathLen) {
   // Just return path if absolute
-  if (path != NULL && path[0] == '/') {
+  if (path != NULL && pathLen > 0 && path[0] == '/') {
     return path;
   }
 
@@ -23,7 +23,6 @@ static char *expand_path(char *path) {
     return cwd;
   }
   size_t cwdLen = strlen(cwd);
-  size_t pathLen = strlen(path);
   char *fullPath = malloc(cwdLen + pathLen + 2);
 
   memcpy(fullPath, cwd, cwdLen);
@@ -46,7 +45,7 @@ int main(int argc, char **argv) {
     dest = cmd.argv[0];
   }
 
-  dest = expand_path(dest);
+  dest = expand_path(dest, strlen(dest));
   if (dest == NULL) {
     perror("Expand destination");
     goto error;
