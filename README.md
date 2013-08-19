@@ -21,3 +21,4 @@ To set a default language when generating use the `DEFAULT_PROG_LANG` environmen
 
 ### License
 MIT licensed, see [here](https://raw.github.com/larzconwell/projgen/master/LICENSE)
+To get details about Projgen's dependencies view the projects directory in the `deps` directory.

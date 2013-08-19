@@ -5,7 +5,7 @@ CFLAGS=-std=c99 -g -O2 -Wall -Wextra -Isrc -rdynamic
 
 all: projgen
 
-projgen: deps/commander/commander.o
+projgen: deps/commander/commander.o deps/bstring/bstrlib.o
 
 install: all
 	install -d $(DESTDIR)/$(PREFIX)/bin
