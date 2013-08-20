@@ -4,8 +4,7 @@ Projgen is a simple program to generate project scaffolding. It supports a numbe
 platforms, as well as a number of options to customize the project.
 
 ### Installation
-Visit the releases page and download the archive for the version you'd like, then just unpack it
-and then run
+Clone this repository, optionally checking out the version you want, and then compile and install.
 ```
 PREFIX=/usr/local make install
 ```
