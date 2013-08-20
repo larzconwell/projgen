@@ -95,12 +95,12 @@ int main(int argc, char **argv) {
   // write language template
   // if makefile opt write makefile
 
+  bdestroy(dest);
+  command_free(&cmd);
+  return 0;
+
 error:
   bdestroy(dest);
   command_free(&cmd);
   return 1;
-
-  bdestroy(dest);
-  command_free(&cmd);
-  return 0;
 }
