@@ -4,53 +4,85 @@
 #include <string.h>
 #include <errno.h>
 #include "deps/commander/commander.h"
+#include "deps/bstring/bstrlib.h"
 
 #include "version.h"
+#include "projgen.h"
 
-static char *expand_path(char *path, const int pathLen) {
+static bstring expand_path(bstring path, const int pathLen) {
   // Just return path if absolute
-  if (path != NULL && pathLen > 0 && path[0] == '/') {
+  if (path != NULL && pathLen > 0 && bchar(path, 0) == '/') {
     return path;
   }
 
   char *cwd = getcwd(NULL, 0);
   if (cwd == NULL) {
+    perror("Expand directory");
     return NULL;
   }
 
-  // If path is NULL then the path is just cwd
-  if (path == NULL) {
-    return cwd;
+  bstring bcwd = bfromcstr(cwd);
+  if (bcwd == NULL) {
+    free(cwd);
+    fprintf(stderr, "An error occured while getting current directory");
+    return NULL;
   }
-  size_t cwdLen = strlen(cwd);
-  char *fullPath = malloc(cwdLen + pathLen + 2);
 
-  memcpy(fullPath, cwd, cwdLen);
-  fullPath[cwdLen] = '/';
-  memcpy(fullPath + cwdLen + 1, path, pathLen + 1);
+  // Return bcwd if no path
+  if (path == NULL) {
+    free(cwd);
+    bdestroy(path);
+    return bcwd;
+  }
 
-  free(path);
+  bstring path_seperator = bfromcstr("/");
+  if (path_seperator == NULL) {
+    free(cwd);
+    bdestroy(bcwd);
+    fprintf(stderr, "An error occured while getting current directory");
+    return NULL;
+  }
+
+  int concat = BSTR_OK;
+  concat = bconcat(bcwd, path_seperator);
+  if (concat == BSTR_OK) {
+    concat = bconcat(bcwd, path);
+  }
+  if (concat == BSTR_ERR) {
+    free(cwd);
+    bdestroy(path_seperator);
+    bdestroy(bcwd);
+    fprintf(stderr, "An error occured while expanding directory");
+    return NULL;
+  }
+
   free(cwd);
-  return fullPath;
+  bdestroy(path_seperator);
+  bdestroy(path);
+  return bcwd;
 }
 
 int main(int argc, char **argv) {
   command_t cmd;
-  char *dest = NULL;
+  bstring dest = NULL;
 
   command_init(&cmd, "projgen", VERSION);
   command_parse(&cmd, argc, argv);
 
   if (cmd.argc > 0) {
-    dest = cmd.argv[0];
+    dest = bfromcstr(cmd.argv[0]);
+    if (dest == NULL) {
+      fprintf(stderr, "An error occured while getting the destination path");
+      goto error;
+    }
   }
 
-  dest = expand_path(dest, strlen(dest));
+  dest = expand_path(dest, blength(dest));
   if (dest == NULL) {
-    perror("Expand destination");
     goto error;
   }
-  printf("%s\n", dest);
+
+  printf("%s\n", bdata(dest));
 
   // TODO:
   // get default language from DEFAULT_PROG_LANG
@@ -64,11 +96,11 @@ int main(int argc, char **argv) {
   // if makefile opt write makefile
 
 error:
-  free(dest);
+  bdestroy(dest);
   command_free(&cmd);
   return 1;
 
-  free(dest);
+  bdestroy(dest);
   command_free(&cmd);
   return 0;
 }
