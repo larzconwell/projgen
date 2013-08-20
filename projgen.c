@@ -9,8 +9,6 @@
 #include "path.h"
 #include "projgen.h"
 
-#define VERSION "0.0.1"
-
 char *lang = NULL;
 const char *license = "mit";
 char *licensePath = NULL;
