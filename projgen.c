@@ -6,67 +6,22 @@
 #include "deps/commander/commander.h"
 #include "deps/bstring/bstrlib.h"
 
-#include "version.h"
+#include "path.h"
 #include "projgen.h"
 
+#define VERSION "0.0.1"
+
 char *lang = NULL;
+const char *license = "mit";
+char *licensePath = NULL;
 int lang_env = 0;
-
-static bstring expand_path(bstring path, const int pathLen) {
-  // Just return path if absolute
-  if (path != NULL && pathLen > 0 && bchar(path, 0) == '/') {
-    return path;
-  }
-
-  char *cwd = getcwd(NULL, 0);
-  if (cwd == NULL) {
-    perror("Expand directory");
-    return NULL;
-  }
-
-  bstring bcwd = bfromcstr(cwd);
-  if (bcwd == NULL) {
-    free(cwd);
-    fprintf(stderr, "An error occured while getting current directory");
-    return NULL;
-  }
-
-  // Return bcwd if no path
-  if (path == NULL) {
-    free(cwd);
-    bdestroy(path);
-    return bcwd;
-  }
-
-  bstring path_seperator = bfromcstr("/");
-  if (path_seperator == NULL) {
-    free(cwd);
-    bdestroy(bcwd);
-    fprintf(stderr, "An error occured while getting current directory");
-    return NULL;
-  }
-
-  int concat = BSTR_OK;
-  concat = bconcat(bcwd, path_seperator);
-  if (concat == BSTR_OK) {
-    concat = bconcat(bcwd, path);
-  }
-  if (concat == BSTR_ERR) {
-    free(cwd);
-    bdestroy(path_seperator);
-    bdestroy(bcwd);
-    fprintf(stderr, "An error occured while expanding directory");
-    return NULL;
-  }
-
-  free(cwd);
-  bdestroy(path_seperator);
-  bdestroy(path);
-  return bcwd;
-}
 
 static void set_lang(command_t *cmd) {
   lang = (char *)cmd->arg;
+}
+
+static void set_license(command_t *cmd) {
+  license = cmd->arg;
 }
 
 int main(int argc, char **argv) {
@@ -75,6 +30,7 @@ int main(int argc, char **argv) {
 
   command_init(&cmd, "projgen", VERSION);
   command_option(&cmd, "-l", "--lang [arg]", "Language to use", set_lang);
+  command_option(&cmd, "-i", "--license [arg]", "License to use", set_license);
   command_parse(&cmd, argc, argv);
 
   if (cmd.argc > 0) {
@@ -98,8 +54,19 @@ int main(int argc, char **argv) {
     }
   }
 
+  // Get path to license
+  licensePath = path_join("licenses", license);
+  if (licensePath == NULL) {
+    goto error;
+  }
+
+  // Ensure the license file exists
+  if (access(licensePath, F_OK) < 0) {
+    perror("License file");
+    goto error;
+  }
+
   // TODO:
-  // get license defaulting to mit
   // ensure license exists
   // ensure language dir exists if given
   // make destination directory
@@ -111,6 +78,7 @@ int main(int argc, char **argv) {
   if (!lang_env) {
     free(lang);
   }
+  free(licensePath);
   bdestroy(dest);
   command_free(&cmd);
   return 0;
@@ -119,6 +87,7 @@ error:
   if (!lang_env) {
     free(lang);
   }
+  free(licensePath);
   bdestroy(dest);
   command_free(&cmd);
   return 1;
