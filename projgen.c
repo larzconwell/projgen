@@ -65,7 +65,6 @@ int main(int argc, char **argv) {
   }
 
   // TODO:
-  // ensure license exists
   // ensure language dir exists if given
   // make destination directory
   // write license

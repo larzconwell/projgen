@@ -59,4 +59,35 @@ extern bstring expand_path(bstring path, const int pathLen) {
   return bcwd;
 }
 
-extern char *path_join(char *str, ...) { return NULL; }
+extern char *path_join(char *str, ...) {
+  va_list args;
+  char *arg = str;
+
+  bstring joined_path = bfromcstr(str);
+  if (joined_path == NULL) {
+    free(arg);
+    fprintf(stderr, "An error occured while joining directories");
+    return NULL;
+  }
+
+  bstring path_seperator = bfromcstr("/");
+  if (path_seperator == NULL) {
+    free(arg);
+    bdestroy(joined_path);
+    fprintf(stderr, "An error occured while joining directories");
+    return NULL;
+  }
+
+  va_start(args, str);
+  while (arg != NULL) {
+    arg = va_arg(args, char *);
+    printf("%s\n", arg); // SEG FAULT
+  }
+  va_end(args);
+
+  char *path = bdata(joined_path);
+
+  bdestroy(path_seperator);
+  bdestroy(joined_path);
+  return path;
+}
