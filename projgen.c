@@ -9,6 +9,9 @@
 #include "version.h"
 #include "projgen.h"
 
+char *lang = NULL;
+int lang_env = 0;
+
 static bstring expand_path(bstring path, const int pathLen) {
   // Just return path if absolute
   if (path != NULL && pathLen > 0 && bchar(path, 0) == '/') {
@@ -62,11 +65,16 @@ static bstring expand_path(bstring path, const int pathLen) {
   return bcwd;
 }
 
+static void set_lang(command_t *cmd) {
+  lang = (char *)cmd->arg;
+}
+
 int main(int argc, char **argv) {
   command_t cmd;
   bstring dest = NULL;
 
   command_init(&cmd, "projgen", VERSION);
+  command_option(&cmd, "-l", "--lang [arg]", "Language to use", set_lang);
   command_parse(&cmd, argc, argv);
 
   if (cmd.argc > 0) {
@@ -82,24 +90,35 @@ int main(int argc, char **argv) {
     goto error;
   }
 
-  printf("%s\n", bdata(dest));
+  // If no language given check DEFAULT_PROG_LANG
+  if (lang == NULL) {
+    lang = getenv("DEFAULT_PROG_LANG");
+    if (lang != NULL) {
+      lang_env = 1;
+    }
+  }
 
   // TODO:
-  // get default language from DEFAULT_PROG_LANG
   // get license defaulting to mit
   // ensure license exists
-  // ensure language dir exists
+  // ensure language dir exists if given
   // make destination directory
   // write license
   // write readme.md
-  // write language template
+  // write language template if given
   // if makefile opt write makefile
 
+  if (!lang_env) {
+    free(lang);
+  }
   bdestroy(dest);
   command_free(&cmd);
   return 0;
 
 error:
+  if (!lang_env) {
+    free(lang);
+  }
   bdestroy(dest);
   command_free(&cmd);
   return 1;
