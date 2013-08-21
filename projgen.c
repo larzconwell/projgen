@@ -12,6 +12,7 @@
 char *lang = NULL;
 const char *license = "mit";
 bstring licensePath = NULL;
+bstring langPath = NULL;
 int lang_env = 0;
 
 static void set_lang(command_t *cmd) {
@@ -59,13 +60,25 @@ int main(int argc, char **argv) {
   }
 
   // Ensure the license file exists
-  if (access(bdata(licensePath), F_OK) < 0) {
+  if (access(bdata(licensePath), R_OK|F_OK) < 0) {
     perror("License file");
     goto error;
   }
 
+  // Ensure language file exists
+  if (lang != NULL) {
+    langPath = path_join("langs", lang, NULL);
+    if (langPath == NULL) {
+      goto error;
+    }
+
+    if (access(bdata(langPath), R_OK|F_OK) < 0) {
+      perror("Language file");
+      goto error;
+    }
+  }
+
   // TODO:
-  // ensure language dir exists if given
   // make destination directory
   // write license
   // write readme.md
@@ -76,6 +89,7 @@ int main(int argc, char **argv) {
     free(lang);
   }
   bdestroy(licensePath);
+  bdestroy(langPath);
   bdestroy(dest);
   command_free(&cmd);
   return 0;
@@ -85,6 +99,7 @@ error:
     free(lang);
   }
   bdestroy(licensePath);
+  bdestroy(langPath);
   bdestroy(dest);
   command_free(&cmd);
   return 1;
