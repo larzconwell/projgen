@@ -2,11 +2,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "deps/bstring/bstrlib.h"
 
 #include "path.h"
 
-extern bstring expand_path(bstring path, const int pathLen) {
+// Expands the given path if not absolute or NULL
+extern bstring expand_path(bstring path) {
+  int pathLen = blength(path);
+
   // Just return path if absolute
   if (path != NULL && pathLen > 0 && bchar(path, 0) == '/') {
     return path;
@@ -59,12 +64,13 @@ extern bstring expand_path(bstring path, const int pathLen) {
   return bcwd;
 }
 
-extern bstring path_join(char *str, ...) {
+// Join a number of paths together, requires explicit NULL to terminate join
+extern bstring path_join(const char *path, ...) {
   va_list args;
   int concat = BSTR_OK;
   bstring barg;
 
-  bstring joined_path = bfromcstr(str);
+  bstring joined_path = bfromcstr(path);
   if (joined_path == NULL) {
     fprintf(stderr, "An error occured while joining directories");
     return NULL;
@@ -77,7 +83,7 @@ extern bstring path_join(char *str, ...) {
     return NULL;
   }
 
-  va_start(args, str);
+  va_start(args, path);
   char *arg = va_arg(args, char *);
   while (arg != NULL) {
     barg = bfromcstr(arg);
@@ -107,4 +113,17 @@ extern bstring path_join(char *str, ...) {
 
   bdestroy(path_seperator);
   return joined_path;
+}
+
+// Create all the directories for the given path
+extern int mkdirall(bstring path, mode_t mode) {
+  struct bstrList *pathSplit = bsplit(path, '/');
+  bstring part;
+
+  for (int i = 0; i < pathSplit->qty; i++) {
+    part = pathSplit->entry[i];
+  }
+
+  bstrListDestroy(pathSplit);
+  return 0;
 }

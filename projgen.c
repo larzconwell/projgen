@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include "deps/commander/commander.h"
 #include "deps/bstring/bstrlib.h"
 
@@ -40,7 +42,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  dest = expand_path(dest, blength(dest));
+  dest = expand_path(dest);
   if (dest == NULL) {
     goto error;
   }
@@ -78,8 +80,12 @@ int main(int argc, char **argv) {
     }
   }
 
+  int dir = mkdirall(dest, S_IRWXU|S_IRWXG);
+  if (dir < 0) {
+    goto error;
+  }
+
   // TODO:
-  // make destination directory
   // write license
   // write readme.md
   // write language template if given
