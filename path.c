@@ -59,35 +59,52 @@ extern bstring expand_path(bstring path, const int pathLen) {
   return bcwd;
 }
 
-extern char *path_join(char *str, ...) {
+extern bstring path_join(char *str, ...) {
   va_list args;
-  char *arg = str;
+  int concat = BSTR_OK;
+  bstring barg;
 
   bstring joined_path = bfromcstr(str);
   if (joined_path == NULL) {
-    free(arg);
     fprintf(stderr, "An error occured while joining directories");
     return NULL;
   }
 
   bstring path_seperator = bfromcstr("/");
   if (path_seperator == NULL) {
-    free(arg);
     bdestroy(joined_path);
     fprintf(stderr, "An error occured while joining directories");
     return NULL;
   }
 
   va_start(args, str);
+  char *arg = va_arg(args, char *);
   while (arg != NULL) {
+    barg = bfromcstr(arg);
+    if (barg == NULL) {
+      bdestroy(path_seperator);
+      bdestroy(joined_path);
+      fprintf(stderr, "An error occured while joining directories");
+      return NULL;
+    }
+
+    concat = bconcat(joined_path, path_seperator);
+    if (concat == BSTR_OK) {
+      concat = bconcat(joined_path, barg);
+    }
+    if (concat == BSTR_ERR) {
+      bdestroy(barg);
+      bdestroy(path_seperator);
+      bdestroy(joined_path);
+      fprintf(stderr, "An error occured while joining directories");
+      return NULL;
+    }
+
+    bdestroy(barg);
     arg = va_arg(args, char *);
-    printf("%s\n", arg); // SEG FAULT
   }
   va_end(args);
 
-  char *path = bdata(joined_path);
-
   bdestroy(path_seperator);
-  bdestroy(joined_path);
-  return path;
+  return joined_path;
 }

@@ -11,7 +11,7 @@
 
 char *lang = NULL;
 const char *license = "mit";
-char *licensePath = NULL;
+bstring licensePath = NULL;
 int lang_env = 0;
 
 static void set_lang(command_t *cmd) {
@@ -53,13 +53,13 @@ int main(int argc, char **argv) {
   }
 
   // Get path to license
-  licensePath = path_join("licenses", license);
+  licensePath = path_join("licenses", license, NULL);
   if (licensePath == NULL) {
     goto error;
   }
 
   // Ensure the license file exists
-  if (access(licensePath, F_OK) < 0) {
+  if (access(bdata(licensePath), F_OK) < 0) {
     perror("License file");
     goto error;
   }
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
   if (!lang_env) {
     free(lang);
   }
-  free(licensePath);
+  bdestroy(licensePath);
   bdestroy(dest);
   command_free(&cmd);
   return 0;
@@ -84,7 +84,7 @@ error:
   if (!lang_env) {
     free(lang);
   }
-  free(licensePath);
+  bdestroy(licensePath);
   bdestroy(dest);
   command_free(&cmd);
   return 1;
