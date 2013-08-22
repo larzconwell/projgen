@@ -1,0 +1,22 @@
+{
+  "name": "{{name}}",
+  "version": "",
+  "author": "",
+  "license": "{{license}}",
+  "description": "",
+  "contributors": [],
+  "bin": "{{name}}.js",
+  "scripts": {},
+  "main": "{{name}}.js",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [],
+  "dependencies": {},
+  "devDependencies": {},
+  "bundledDependencies": [],
+  "engines": {
+    "node": ""
+  }
+}

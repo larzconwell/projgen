@@ -1,21 +1,14 @@
-PREFIX?=/usr/local
+FLAGS=--package=main --compress --uncompress_on_init -r
 
-CC=gcc
-CFLAGS=-std=c99 -g -O2 -Wall -Wextra -Isrc -rdynamic
+build: bundle
+	go build
 
-all: projgen
+install: bundle
+	go install
 
-projgen: path.o deps/commander/commander.o deps/bstring/bstrlib.o
-
-install: all
-	install -d $(DESTDIR)/$(PREFIX)/bin
-	install -d $(DESTDIR)/$(PREFIX)/share/projgen
-	install projgen $(DESTDIR)/$(PREFIX)/bin
-	cp -r langs licenses $(DESTDIR)/$(PREFIX)/share/projgen
-
-uninstall:
-	rm -rf $(DESTDIR)/$(PREFIX)/share/projgen
-	rm -f $(DESTDIR)/$(PREFIX)/bin/projgen
+bundle:
+	-(cd licenses && gobundle --bundle=licenses --target=../licenses.go $(FLAGS) .)
+	-(cd langs && gobundle --bundle=langs --target=../langs.go $(FLAGS) .)
 
 clean:
-	rm -f *.o deps/*/*.o projgen
+	rm -f licenses.go langs.go
