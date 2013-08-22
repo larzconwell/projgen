@@ -4,7 +4,12 @@ Projgen is a simple program to generate project scaffolding. It supports a numbe
 platforms, as well as a number of options to customize the project.
 
 ### Installation
-Clone this repository, and then install.
+First you'll need to get `gobundle`. Simply do:
+```
+go get github.com/alecthomas/gobundle/gobundle
+```
+
+After that clone this repo, and then run make:
 ```
 make install
 ```
