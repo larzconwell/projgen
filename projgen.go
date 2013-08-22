@@ -17,6 +17,7 @@ var (
 	license  string
 	lang     string
 	makefile bool
+	force    bool
 	err      error
 	readme   = "## {{name}}"
 )
@@ -24,9 +25,11 @@ var (
 const usage = `Projgen
 
 Options:
-  --license, -i [arg] License to use(Default: mit)
+  --license, -i [arg]  License to use(Default: mit)
   --language, -l [arg] Language template to use
-  --makefile, -m Create empty Makefile(Default: false)
+  --makefile, -m       Create empty Makefile(Default: false)
+  --force, -f          Force overwriting if the directory isn't
+                       empty
 
 If the DEFAULT_PROG_LANG environment variable is set and no
 language is given then it's used, otherwise an error is
@@ -42,6 +45,8 @@ func init() {
 	flag.StringVar(&lang, "l", "", "")
 	flag.BoolVar(&makefile, "makefile", false, "")
 	flag.BoolVar(&makefile, "m", false, "")
+	flag.BoolVar(&force, "force", false, "")
+	flag.BoolVar(&force, "f", false, "")
 
 	flag.Usage = func() {
 		fmt.Fprintln(os.Stderr, usage)
@@ -100,6 +105,24 @@ func main() {
 	err = os.MkdirAll(dst, os.ModeDir|os.ModePerm)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Don't write files if destination isn't empty, and force isn't given
+	dstF, err := os.Open(dst)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	defer dstF.Close()
+
+	dstNames, err := dstF.Readdirnames(1)
+	if err != nil && err != io.EOF {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if len(dstNames) > 0 && !force {
+		fmt.Fprintln(os.Stderr, "Directory isn't empty")
 		os.Exit(1)
 	}
 
