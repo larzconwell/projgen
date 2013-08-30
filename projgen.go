@@ -148,6 +148,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Write an CHANGELOG.md file
+	err = WriteText("", filepath.Join(dst, "CHANGELOG.md"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
 	// Write Makefile if flag was given
 	if makefile {
 		err = WriteText("", filepath.Join(dst, "Makefile"))
