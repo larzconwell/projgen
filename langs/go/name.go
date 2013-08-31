@@ -1,9 +1,9 @@
-package {{name}}
+package main
 
 import (
-  "fmt"
+	"fmt"
 )
 
 func main() {
-  fmt.Println("{{name}}")
+	fmt.Println("{{name}}")
 }
