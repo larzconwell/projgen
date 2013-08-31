@@ -24,6 +24,9 @@ var (
 
 const usage = `Projgen
 
+Usage:
+  projgen [options] [destination]
+
 Options:
   --license, -i [arg]  License to use(Default: mit)
   --language, -l [arg] Language template to use
