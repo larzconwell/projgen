@@ -103,6 +103,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Language doesn't exist")
 		os.Exit(1)
 	}
+	lang += "/"
 
 	// Create destination
 	err = os.MkdirAll(dst, os.ModeDir|os.ModePerm)
